@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "canisters": {
+    "coverce_backend": {
+      "main": "src/coverce_backend/main.mo",
+      "type": "motoko"
+    },
+    "coverce_frontend": {
+      "dependencies": ["coverce_backend"],
+      "frontend": {
+        "entrypoint": "src/coverce_frontend/src/index.html"
+      },
+      "source": ["src/coverce_frontend/src"],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    },
+    "ic": {
+      "type": "persistent"
+    }
+  },
+  "output_env_file": ".env"
+}
+
+
+
