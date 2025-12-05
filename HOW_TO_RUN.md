@@ -1,331 +1,250 @@
-# How to Run Coverce.ai - Step by Step
+# How to Run Your VividVerse Project
 
-This guide shows you exactly how to run the commands, especially if you're new to the terminal.
+## Quick Start (3 Steps)
 
-**🪟 Windows users:** See Windows-specific instructions below  
-**🐧 Linux users:** Commands are the same, just use forward slashes `/` instead of backslashes `\`
+### Step 1: Install PostgreSQL ⚠️ REQUIRED
 
-## 🪟 Windows Instructions (PowerShell or Command Prompt)
+**Option A: Download & Install (Recommended)**
+1. Download: https://www.postgresql.org/download/windows/
+2. Install with default settings
+3. Remember the password you set for `postgres` user
+4. Create database using pgAdmin:
+   - Open pgAdmin 4
+   - Right-click "Databases" → Create → Database
+   - Name: `vividverse`
+   - Click Save
 
-### Option 1: Using PowerShell (Recommended)
-
-1. **Open PowerShell:**
-   - Press `Windows Key + X`
-   - Click "Windows PowerShell" or "Terminal"
-   - Or search for "PowerShell" in Start menu
-
-2. **Navigate to your project folder:**
-   ```powershell
-   cd C:\Users\bspam\Desktop\coverce.ai
-   ```
-
-3. **Open 3 PowerShell Windows:**
-   - Right-click PowerShell icon → "Open new window" (do this 3 times)
-   - Or press `Ctrl + Shift + N` in PowerShell to open a new window
-   - Or open PowerShell from Start menu 3 times
-
-### Option 2: Using Command Prompt (cmd)
-
-1. **Open Command Prompt:**
-   - Press `Windows Key + R`
-   - Type `cmd` and press Enter
-   - Or search for "Command Prompt" in Start menu
-
-2. **Navigate to your project:**
-   ```cmd
-   cd C:\Users\bspam\Desktop\coverce.ai
-   ```
-
-3. **Open 3 Command Prompt windows** (same as PowerShell above)
-
----
-
-## 📝 Step-by-Step: Running Each Terminal
-
-### Terminal 1: Start ICP Network
-
-1. **In the first terminal window**, type:
-   ```powershell
-   dfx start
-   ```
-   (or `dfx start` in Command Prompt)
-
-2. **Wait for it to finish starting.** You'll see messages like:
-   ```
-   Starting local replica...
-   Replica ready
-   ```
-   ⚠️ **Keep this terminal open!** Don't close it.
-
-3. **Leave this running** - it's your local blockchain network.
-
----
-
-### Terminal 2: Deploy Canisters
-
-1. **Open a second terminal window**
-2. **Navigate to the project folder again:**
-   ```powershell
-   cd C:\Users\bspam\Desktop\coverce.ai
-   ```
-
-3. **Run these commands one at a time:**
-   ```powershell
-   dfx generate
-   ```
-   Wait for it to finish (may take 30-60 seconds)
-
-   Then run:
-   ```powershell
-   dfx deploy
-   ```
-   Wait for it to finish (may take 1-2 minutes)
-
-4. **You should see:**
-   ```
-   Deployed canisters.
-   URLs:
-     Frontend canister via browser
-       http://127.0.0.1:8000/?canisterId=...
-   ```
-
----
-
-### Terminal 3: Start Frontend
-
-1. **Open a third terminal window**
-2. **Navigate to the project folder:**
-   ```powershell
-   cd C:\Users\bspam\Desktop\coverce.ai
-   ```
-
-3. **Navigate to frontend folder:**
-   ```powershell
-   cd src\coverce_frontend
-   ```
-   (Note: Use backslashes `\` on Windows, or forward slashes `/` work too)
-
-4. **Start the dev server:**
-   ```powershell
-   npm run dev
-   ```
-
-5. **You should see:**
-   ```
-   VITE v5.x.x  ready in xxx ms
-
-   ➜  Local:   http://localhost:3000/
-   ```
-
-6. **Open your browser** and go to: **http://localhost:3000**
-
----
-
-## 🖥️ macOS/Linux Instructions
-
-### Using Terminal
-
-1. **Open Terminal** (3 windows):
-   - macOS: `Cmd + Space`, type "Terminal", press Enter
-   - Linux: `Ctrl + Alt + T` or search for Terminal
-
-2. **Navigate to project:**
-   ```bash
-   cd ~/Desktop/coverce.ai
-   ```
-   (Adjust path to where your project is)
-
-3. **Follow the same 3-terminal steps above**, but use forward slashes `/`:
-   ```bash
-   # Terminal 1
-   dfx start
-   
-   # Terminal 2
-   dfx generate
-   dfx deploy
-   
-   # Terminal 3
-   cd src/coverce_frontend
-   npm run dev
-   ```
-
----
-
-## 🎯 Visual Guide: What You Should See
-
-### Terminal 1 (dfx start):
-```
-Starting local replica...
-Replica ready
-[Keeps running - don't close]
+**Option B: Docker (If you have Docker Desktop)**
+```powershell
+docker run --name vividverse-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=vividverse -p 5432:5432 -d postgres:15
 ```
 
-### Terminal 2 (dfx deploy):
-```
-Generating type definitions...
-Deployed canisters.
-URLs:
-  Frontend canister via browser
-    http://127.0.0.1:8000/?canisterId=...
+**Option C: Cloud Database (Free)**
+- Supabase: https://supabase.com
+- Update `backend/.env` with connection details
+
+### Step 2: Run Database Migrations
+
+```powershell
+cd vividverse/backend
+npm run migrate
 ```
 
-### Terminal 3 (npm run dev):
+You should see: `✅ Migrations completed successfully!`
+
+### Step 3: Start the Servers
+
+**Terminal 1 - Backend:**
+```powershell
+cd vividverse/backend
+npm run dev
+```
+
+Wait for: `🚀 VividVerse Backend Server running on http://localhost:3001`
+
+**Terminal 2 - Frontend (New Terminal):**
+```powershell
+cd vividverse/src/coverce_frontend
+npm run dev
+```
+
+Wait for: `Local: http://localhost:5173/`
+
+### Step 4: Open in Browser
+
+Navigate to: **http://localhost:5173**
+
+---
+
+## Detailed Step-by-Step
+
+### 1. Check Prerequisites
+
+**PostgreSQL:**
+```powershell
+# Check if PostgreSQL service is running
+Get-Service -Name "*postgres*"
+```
+
+**Dependencies:**
+```powershell
+# If not installed, run:
+cd vividverse/backend
+npm install
+
+cd ../src/coverce_frontend
+npm install
+```
+
+### 2. Configure Database
+
+**Update `backend/.env` if needed:**
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=vividverse
+DB_USER=postgres
+DB_PASSWORD=postgres  # Change if you set a different password
+JWT_SECRET=your-secret-key
+PORT=3001
+```
+
+### 3. Create Database
+
+**Using pgAdmin (Easiest):**
+1. Open pgAdmin 4
+2. Connect to PostgreSQL server
+3. Right-click "Databases" → Create → Database
+4. Name: `vividverse`
+5. Click Save
+
+**Using Command Line:**
+```powershell
+# If PostgreSQL is in PATH:
+createdb -U postgres vividverse
+
+# Or use full path:
+"C:\Program Files\PostgreSQL\15\bin\createdb.exe" -U postgres vividverse
+```
+
+### 4. Run Migrations
+
+```powershell
+cd vividverse/backend
+npm run migrate
+```
+
+This creates all the database tables.
+
+### 5. Start Backend Server
+
+**Open Terminal 1:**
+```powershell
+cd vividverse/backend
+npm run dev
+```
+
+**Expected Output:**
+```
+🚀 VividVerse Backend Server running on http://localhost:3001
+📁 Uploads directory: ...
+🎬 Movies directory: ...
+```
+
+**If you see database errors:**
+- Check PostgreSQL is running
+- Verify database `vividverse` exists
+- Check credentials in `backend/.env`
+
+### 6. Start Frontend Server
+
+**Open Terminal 2 (New Terminal Window):**
+```powershell
+cd vividverse/src/coverce_frontend
+npm run dev
+```
+
+**Expected Output:**
 ```
 VITE v5.x.x  ready in xxx ms
 
-➜  Local:   http://localhost:3000/
+➜  Local:   http://localhost:5173/
 ➜  Network: use --host to expose
 ```
 
-### Browser (http://localhost:3000):
-- Coverce.ai homepage
-- "Login with Internet Identity" button
-- Feature cards and "How It Works" section
+### 7. Access the Application
+
+Open your browser and go to: **http://localhost:5173**
+
+You should see the VividVerse homepage!
 
 ---
 
-## ❓ Common Questions
+## First Time Usage
 
-### Q: Do I need to install anything first?
+1. **Register Account:**
+   - Click "Login" in navbar
+   - Switch to "Register" tab
+   - Enter email, password, username
+   - Click "Register"
 
-**Yes!** Make sure you have:
+2. **Submit a Script:**
+   - Go to "Submit Script"
+   - Fill in title, select format
+   - Upload a file (.fountain, .pdf, or .txt)
+   - Click "Submit Script"
 
-1. **DFX SDK** installed:
-   ```powershell
-   dfx --version
-   ```
-   If this doesn't work, install from: https://internetcomputer.org/docs/current/developer-docs/setup/install/
+3. **Become a Validator:**
+   - Go to "Validate"
+   - Click "Register as Validator"
+   - Now you can score scripts!
 
-2. **Node.js** installed:
-   ```powershell
-   node --version
-   ```
-   If this doesn't work, install from: https://nodejs.org/
-
-3. **Dependencies** installed:
-   ```powershell
-   npm install
-   cd src\coverce_frontend
-   npm install
-   cd ..\..
-   cd src\ai_orchestrator
-   npm install
-   ```
-
-### Q: What if "dfx" command not found?
-
-**Install DFX SDK:**
-- Windows: Follow instructions at https://internetcomputer.org/docs/current/developer-docs/setup/install/
-- Or use the setup script: `.\setup.ps1` (PowerShell) or `setup.sh` (Linux/macOS)
-
-### Q: What if "npm" command not found?
-
-**Install Node.js:**
-- Download from: https://nodejs.org/
-- Install the LTS version
-- Restart your terminal after installing
-
-### Q: Can I use one terminal instead of three?
-
-**Not recommended**, but you can use background processes:
-
-**Windows PowerShell:**
-```powershell
-# Start dfx in background
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "dfx start"
-
-# Wait a few seconds, then deploy
-dfx generate
-dfx deploy
-
-# Start frontend
-cd src\coverce_frontend
-npm run dev
-```
-
-**But it's easier to use 3 separate windows!**
-
-### Q: How do I stop everything?
-
-1. **Terminal 1**: Press `Ctrl + C` to stop dfx
-2. **Terminal 3**: Press `Ctrl + C` to stop the frontend server
-3. **Terminal 2**: Can be closed (it's done)
-
-### Q: What if I get errors?
-
-**Common fixes:**
-
-1. **"dfx: command not found"**
-   - Install DFX SDK
-   - Restart terminal
-   - Check PATH environment variable
-
-2. **"Cannot connect to local network"**
-   - Make sure Terminal 1 (dfx start) is still running
-   - Wait a bit longer for it to fully start
-
-3. **"Port already in use"**
-   - Something else is using port 8000 or 3000
-   - Close other applications
-   - Or change ports in config files
-
-4. **"npm install" fails**
-   - Check internet connection
-   - Try: `npm install --legacy-peer-deps`
-   - Delete `node_modules` folder and try again
+4. **View Scripts:**
+   - Go to "Scripts" to see all submissions
+   - View scores and status
 
 ---
 
-## 🎬 Quick Copy-Paste Commands
+## Troubleshooting
 
-**For Windows PowerShell (copy all at once):**
+### Backend Won't Start
+
+**Error: "Cannot connect to database"**
+- ✅ Check PostgreSQL is running: `Get-Service "*postgres*"`
+- ✅ Verify database exists: `psql -U postgres -l | grep vividverse`
+- ✅ Check `backend/.env` credentials match your PostgreSQL setup
+
+**Error: "Port 3001 already in use"**
+- Change `PORT=3001` to another port in `backend/.env`
+- Update `VITE_API_URL` in `frontend/.env` to match
+
+### Frontend Won't Start
+
+**Error: "Port 5173 already in use"**
+- Vite will automatically use the next available port
+- Check the terminal output for the actual URL
+
+**Error: "Cannot connect to backend"**
+- Make sure backend is running first
+- Check `VITE_API_URL` in `frontend/.env` matches backend URL
+- Verify CORS is enabled in backend (it is by default)
+
+### Database Errors
+
+**"relation does not exist"**
+- Run migrations: `cd backend && npm run migrate`
+
+**"password authentication failed"**
+- Check password in `backend/.env` matches your PostgreSQL password
+- Default user is `postgres`
+
+---
+
+## Stopping the Servers
+
+Press `Ctrl+C` in each terminal to stop the servers.
+
+---
+
+## Quick Reference
 
 ```powershell
-# Terminal 1
-dfx start
-
-# Terminal 2 (wait for Terminal 1)
-cd C:\Users\bspam\Desktop\coverce.ai
-dfx generate
-dfx deploy
-
-# Terminal 3
-cd C:\Users\bspam\Desktop\coverce.ai
-cd src\coverce_frontend
+# Terminal 1 - Backend
+cd vividverse/backend
 npm run dev
-```
 
-**For macOS/Linux (copy all at once):**
-
-```bash
-# Terminal 1
-dfx start
-
-# Terminal 2 (wait for Terminal 1)
-cd ~/Desktop/coverce.ai
-dfx generate
-dfx deploy
-
-# Terminal 3
-cd ~/Desktop/coverce.ai
-cd src/coverce_frontend
+# Terminal 2 - Frontend  
+cd vividverse/src/coverce_frontend
 npm run dev
+
+# Browser
+http://localhost:5173
 ```
 
 ---
 
-## ✅ Success Checklist
+## Need Help?
 
-After running all commands, you should have:
-
-- [ ] Terminal 1 running `dfx start` (showing "Replica ready")
-- [ ] Terminal 2 completed `dfx deploy` (showing "Deployed canisters")
-- [ ] Terminal 3 running `npm run dev` (showing "Local: http://localhost:3000/")
-- [ ] Browser open to http://localhost:3000 showing the Coverce.ai homepage
-
-**If all checkboxes are checked, you're ready to test!** 🎉
-
-See [PREVIEW_GUIDE.md](./PREVIEW_GUIDE.md) for testing instructions.
-
-
-
+- **PostgreSQL Setup**: See `INSTALL_POSTGRES_NOW.md`
+- **Deployment**: See `DEPLOY_TO_WEB.md`
+- **Full Documentation**: See `README_NODEJS.md`
