@@ -8,8 +8,6 @@
     "dev": "node --watch index.js"
   },
   "dependencies": {
-    "@dfinity/agent": "^2.0.0",
-    "@dfinity/identity": "^2.0.0",
     "axios": "^1.6.0",
     "form-data": "^4.0.0",
     "fluent-ffmpeg": "^2.1.2",

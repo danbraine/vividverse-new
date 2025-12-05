@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getAllScripts, getAggregatedScore, getTopScript, startMovieGeneration } from '../services/vividverseService';
+import { getAllScripts, getAggregatedScore, getTopScript, startMovieGeneration } from '../services/api';
 import './ScriptList.css';
 
 interface Script {

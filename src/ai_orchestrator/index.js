@@ -482,21 +482,62 @@ async function combineVideoAndAudio(videoPath, audioPath, outputPath) {
 }
 
 /**
- * Upload movie to ICP storage
- * This would integrate with your ICP backend canister
+ * Upload movie to backend storage
+ * This integrates with the Node.js REST API backend
  */
-async function uploadMovieToICP(moviePath, scriptId) {
-  console.log(`Uploading movie to ICP for script ${scriptId}...`);
+async function uploadMovieToBackend(moviePath, scriptId) {
+  console.log(`Uploading movie to backend for script ${scriptId}...`);
+  
+  const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001/api';
   
   // Read movie file
   const movieData = await fs.readFile(moviePath);
   
-  // In production, call your ICP canister's updateMovieProgress method
-  // This is a placeholder - implement based on your ICP backend API
-  const movieHash = `hash_${Date.now()}_${scriptId}`;
+  // Get movie file info for duration
+  const movieInfo = await new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(moviePath, (err, metadata) => {
+      if (err) {
+        console.warn('Could not get movie duration:', err);
+        resolve({ format: { duration: 0 } });
+      } else {
+        resolve(metadata);
+      }
+    });
+  });
   
-  console.log(`Movie uploaded with hash: ${movieHash}`);
-  return movieHash;
+  const duration = Math.floor(movieInfo.format.duration || 0);
+  
+  // Upload movie file using FormData
+  const FormData = (await import('form-data')).default;
+  const formData = new FormData();
+  formData.append('movie', movieData, {
+    filename: path.basename(moviePath),
+    contentType: 'video/mp4',
+  });
+  
+  // Upload to backend
+  const uploadResponse = await axios.post(
+    `${API_BASE_URL}/movies/upload`,
+    formData,
+    {
+      headers: formData.getHeaders(),
+    }
+  );
+  
+  const movieUrl = uploadResponse.data.url;
+  
+  // Update movie progress in database
+  await axios.post(
+    `${API_BASE_URL}/movies/${scriptId}/progress`,
+    {
+      movieHash: movieUrl,
+      thumbnailHash: null, // Could generate thumbnail here
+      duration: duration,
+    }
+  );
+  
+  console.log(`Movie uploaded successfully: ${movieUrl}`);
+  return movieUrl;
 }
 
 // Export for use as module or run as script
@@ -514,8 +555,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     try {
       const scriptContent = await fs.readFile(scriptPath, 'utf-8');
       const moviePath = await generateMovie(scriptId, scriptContent);
-      const movieHash = await uploadMovieToICP(moviePath, scriptId);
-      console.log(`Success! Movie hash: ${movieHash}`);
+      const movieUrl = await uploadMovieToBackend(moviePath, scriptId);
+      console.log(`Success! Movie URL: ${movieUrl}`);
     } catch (error) {
       console.error('Failed to generate movie:', error);
       process.exit(1);

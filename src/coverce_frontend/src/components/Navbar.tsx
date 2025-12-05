@@ -4,11 +4,11 @@ import vividverseLogo from '../vividverse_logo.svg';
 import './Navbar.css';
 
 const Navbar = () => {
-  const { isAuthenticated, principal, login, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    logout();
     navigate('/');
   };
 
@@ -33,17 +33,17 @@ const Navbar = () => {
         <div className="navbar-auth">
           {isAuthenticated ? (
             <div className="auth-info">
-              <span className="principal">
-                {principal?.toText().slice(0, 8)}...
+              <span className="user-info">
+                {user?.username || user?.email}
               </span>
               <button onClick={handleLogout} className="btn-logout">
                 Logout
               </button>
             </div>
           ) : (
-            <button onClick={login} className="btn-login">
-              Login with Internet Identity
-            </button>
+            <Link to="/login" className="btn-login">
+              Login
+            </Link>
           )}
         </div>
       </div>

@@ -27,9 +27,9 @@ const Home = () => {
               </Link>
             </>
           ) : (
-            <p className="login-prompt">
-              Login with Internet Identity to get started
-            </p>
+            <Link to="/login" className="btn btn-primary">
+              Login to Get Started
+            </Link>
           )}
         </div>
       </div>
@@ -78,7 +78,7 @@ const Home = () => {
           <div className="step">
             <div className="step-number">4</div>
             <h3>Watch</h3>
-            <p>Final film is stored on ICP and available for viewing</p>
+            <p>Final film is stored and available for viewing</p>
           </div>
         </div>
       </div>

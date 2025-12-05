@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getMovie, getScript } from '../services/vividverseService';
+import { getMovie, getScript } from '../services/api';
 import './MovieViewer.css';
 
 interface Movie {

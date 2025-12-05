@@ -1,12 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AuthClient } from '@dfinity/auth-client';
-import { Principal } from '@dfinity/principal';
+import { login as apiLogin, register as apiRegister, logout as apiLogout, getMe } from '../services/api';
+
+interface User {
+  id: number;
+  email: string;
+  username: string;
+  isValidator?: boolean;
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  principal: Principal | null;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, username?: string) => Promise<void>;
+  logout: () => void;
   loading: boolean;
 }
 
@@ -14,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [principal, setPrincipal] = useState<Principal | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,61 +30,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const checkAuth = async () => {
     try {
-      const authClient = await AuthClient.create();
-      const isAuth = await authClient.isAuthenticated();
-      
-      if (isAuth) {
-        const identity = authClient.getIdentity();
-        setPrincipal(identity.getPrincipal());
+      const token = localStorage.getItem('token');
+      if (token) {
+        const userData = await getMe();
+        setUser(userData);
         setIsAuthenticated(true);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async () => {
-    try {
-      const authClient = await AuthClient.create();
-      
-      const isProduction = import.meta.env.MODE === 'production' || import.meta.env.VITE_DFX_NETWORK === 'ic';
-      
-      // For local development, use production Internet Identity (simpler for PoC)
-      // For production, you can use:
-      // - Internet Identity: https://identity.ic0.app
-      // - NFID (with Google/Apple): https://nfid.one
-      const identityProvider = isProduction
-        ? 'https://identity.ic0.app' // or 'https://nfid.one' for Google/Apple login
-        : 'https://identity.ic0.app'; // Use production II for local dev (works fine for PoC)
-      
-      await authClient.login({
-        identityProvider,
-        onSuccess: async () => {
-          const identity = authClient.getIdentity();
-          setPrincipal(identity.getPrincipal());
-          setIsAuthenticated(true);
-        },
-      });
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
+  const login = async (email: string, password: string) => {
+    const data = await apiLogin(email, password);
+    setUser(data.user);
+    setIsAuthenticated(true);
   };
 
-  const logout = async () => {
-    try {
-      const authClient = await AuthClient.create();
-      await authClient.logout();
-      setPrincipal(null);
-      setIsAuthenticated(false);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+  const register = async (email: string, password: string, username?: string) => {
+    const data = await apiRegister(email, password, username);
+    setUser(data.user);
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    apiLogout();
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, principal, login, logout, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

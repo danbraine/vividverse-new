@@ -6,7 +6,7 @@ import {
   isValidator, 
   submitValidation,
   getValidations 
-} from '../services/vividverseService';
+} from '../services/api';
 import './ValidatorDashboard.css';
 
 interface Script {
@@ -28,7 +28,7 @@ const CATEGORIES = [
 ];
 
 const ValidatorDashboard = () => {
-  const { isAuthenticated, principal } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [scripts, setScripts] = useState<Script[]>([]);
   const [selectedScript, setSelectedScript] = useState<Script | null>(null);
   const [scores, setScores] = useState<Record<string, number>>({});
@@ -40,17 +40,17 @@ const ValidatorDashboard = () => {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && principal) {
+    if (isAuthenticated && user) {
       checkValidatorStatus();
       loadScripts();
     }
-  }, [isAuthenticated, principal]);
+  }, [isAuthenticated, user]);
 
   const checkValidatorStatus = async () => {
-    if (!principal) return;
+    if (!user) return;
     
     try {
-      const validator = await isValidator(principal.toText());
+      const validator = await isValidator(user.id.toString());
       setIsValidatorUser(validator);
     } catch (err) {
       console.error('Error checking validator status:', err);
